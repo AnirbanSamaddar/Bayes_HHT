@@ -114,13 +114,54 @@ Method_Bayes = function(alpha=0.05,nSNP=100,merge_mt,B){
     }	
   }
   
-  output = data.frame(cluster_id = seq_len(length(FDR_ctrl_3)),clusters = rep(NA,length(FDR_ctrl_3)))
-  for(i in seq_len(length(FDR_ctrl_3))){
-    output$clusters[i] = paste(paste0('',FDR_ctrl_3[[i]]),collapse=',')
-  }
-  return(output)
+  #output = data.frame(cluster_id = seq_len(length(FDR_ctrl_3)),clusters = rep(NA,length(FDR_ctrl_3)))
+  #for(i in seq_len(length(FDR_ctrl_3))){
+  #  output$clusters[i] = paste(paste0('',FDR_ctrl_3[[i]]),collapse=',')
+  #}
+  #return(output)
+  return(list(FDR_ctrl_3,t_min))
 }
 
+###Test for individual effects. Input: nSNP, alpha
+Method_ind_lvl = function(alpha=0.05,nSNP=100,B){
+  
+  
+  Inc_prob = unlist(lapply(1:nSNP,function(a) mean(B[,a]!=0)))
+  
+  f = function(t){
+    
+    S = which(Inc_prob>=t)
+    Local_fdr_ctrl_res = c(1:nSNP)[S]
+    
+    #### Calculating the BFDR of the discovery set
+    a = unlist(lapply(Local_fdr_ctrl_res,function(b) (1-Inc_prob[b])))
+    FDR_bar = sum(a)/max(length(Local_fdr_ctrl_res),1)
+    return(FDR_bar)
+  }
+  
+  #### Finding the optimal t value for selecting Discovery set level BFDR
+  Ordered_inc_prob = sort(Inc_prob,decreasing=TRUE)
+  Ordered_FDR_bar = rep(1.1,length(Ordered_inc_prob)) ##Since BFDR <= 1 
+  for(i in seq_along(Ordered_inc_prob)){
+    temp_1 = f(Ordered_inc_prob[i])
+    if(temp_1<=alpha){
+      Ordered_FDR_bar[i] = temp_1
+    }else{
+      break
+    }
+  }
+  
+  I = ifelse(sum(Ordered_FDR_bar>alpha)>0,(which.max(Ordered_FDR_bar>alpha)-1),length(Ordered_FDR_bar))
+  t_min = ifelse(I>0,Ordered_inc_prob[I],1) ###If I=0 then no selection
+  
+  
+  #### Selecting the clusters where FDR is controlled at level t_min
+  S = which(Inc_prob>=t_min)
+  Local_fdr_ctrl_res = c(1:nSNP)[S]
+  
+  
+  return(list(Local_fdr_ctrl_res,t_min,Ordered_FDR_bar))
+}
 
 Method_Subfam_test = function(alpha=0.05,nSNP=100,merge_mt,B){
   stages = merge_mt
@@ -225,9 +266,10 @@ Method_Subfam_test = function(alpha=0.05,nSNP=100,merge_mt,B){
   a = 1-Inc_prob[id[which(!is.na(id))]]
   FDR_bar = sum(a)/max(length(FDR_ctrl_3),1)
 
-  output = data.frame(cluster_id = seq_len(length(FDR_ctrl_3)),clusters = rep(NA,length(FDR_ctrl_3)))
-  for(i in seq_len(length(FDR_ctrl_3))){
-    output$clusters[i] = paste(paste0('',FDR_ctrl_3[[i]]),collapse=',')
-  }
-  return(output)  
+  #output = data.frame(cluster_id = seq_len(length(FDR_ctrl_3)),clusters = rep(NA,length(FDR_ctrl_3)))
+  #for(i in seq_len(length(FDR_ctrl_3))){
+  #  output$clusters[i] = paste(paste0('',FDR_ctrl_3[[i]]),collapse=',')
+  #}
+  #return(output)
+  return(list(FDR_ctrl_3,FDR_bar))  
 }
