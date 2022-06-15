@@ -164,3 +164,6 @@ seq_run = function(id,core = 1){
 system.time(for(id in 1:10){
   seq_run(id,core=1)
 })
+
+
+quit(save='no')

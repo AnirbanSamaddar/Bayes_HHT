@@ -7,6 +7,9 @@ library(susieR)
 library(ggpubr)
 library(grid)
 
+figures_dir = '~/figures/Motivation'
+dir.create(figures_dir)
+
 ############# Simulating phenotype from mice genotypes ############# 
 data(mice)
 dir='http://mtweb.cs.ucl.ac.uk/mus/www/GSCAN/HS_GENOTYPES/'
@@ -70,9 +73,10 @@ grp_dataset$end_bp_id = Dataset$bp_id[grp_dataset$end]
 
 
 ############# Figure 1(a) #############
+png(paste0(figures_dir,'/Figure_1_a.png'))
 p2 = ggplot(Dataset,aes(x=bp_id,y=prob_inc)) + geom_rect(data=grp_dataset[91:95,] ,aes(x=NULL,y=NULL,xmin=start_bp_id,xmax=end_bp_id,ymin=0,ymax=jt_prob_inc),fill="lightblue") + geom_point(color = "gray40") + labs(x="SNP positions (in Mbp)",y="PIP") + ylim(0,1) + geom_hline(yintercept=0.95, linetype = "dashed", color="blue") + geom_vline(xintercept = Dataset$bp_id[QTL],linetype = "dashed",color = "blue") +theme_bw()
 plot(p2)
-
+dev.off()
 
 ############# Figure 1(b) #############
 cor_dataset = abs(cor(X))
@@ -80,7 +84,7 @@ tmp = c(1:500)
 dataset2 = expand.grid(tmp,tmp)
 dataset2$cor_v = sapply(1:nrow(dataset2),function(i) cor_dataset[dataset2[i,1],dataset2[i,2]])
 colnames(dataset2) = c("SNP1","SNP2","Cor")
-png('correlation_heatmap.png')
+png(paste0(figures_dir,'/Figure_1_b.png'))
 p = ggplot(dataset2,aes(SNP1,SNP2))+ geom_tile(aes(fill = Cor)) +
   scale_fill_gradient(low="yellow", high="red") + labs(x = "SNP id", y = "SNP id") + geom_vline(xintercept = dataset2$SNP1[1:500][QTL],linetype = "dashed",color = "blue")
 plot(p)
@@ -89,8 +93,9 @@ dev.off()
 
 ############# Supplementary Figure 1 #############
 dataset3 = data.frame(Iterations = rep(c(1:nrow(B)),2), Samples = abs(c(B[,249:250])), label = c(rep("SNP 249",nrow(B)),rep("SNP 250",nrow(B))))
-png('trace_plot.png')
+png(paste0(figures_dir,'/Supp_Figure_1.png'))
 p = ggplot(dataset3,aes(x=Iterations,y=Samples,color = label)) + geom_point() + theme_bw() + labs(x = "Iteration", y = "Sample")
 plot(p)
 dev.off()
 
+quit(save='no')
