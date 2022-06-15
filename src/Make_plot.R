@@ -12,7 +12,7 @@ if (length(args) < 1) {
   stop("Usage: Make_plot.R resolution")
 }
 resolution = eval(parse(text = args[1])); print(resolution)
-core = args[2]; print(core)
+core = eval(parse(text=args[2])); print(core)
 
 
 output_dir = '~/output'
