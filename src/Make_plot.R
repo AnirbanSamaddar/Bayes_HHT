@@ -138,3 +138,6 @@ figure = ggarrange(p1,nrow=1,ncol=1,common.legend=TRUE)
 annotate_figure(figure, left = textGrob("Power", rot = 90, vjust = 1, gp = gpar(cex = 1)),
                     bottom = textGrob("Empirical FDR", gp = gpar(cex = 1)))
 dev.off()
+
+
+quit(save='no')
