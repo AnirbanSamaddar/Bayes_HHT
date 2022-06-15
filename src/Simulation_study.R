@@ -6,6 +6,13 @@ library(susieR)
 library(ggpubr)
 library(grid)
 
+args <- commandArgs(trailingOnly = TRUE)
+print(args)
+if (length(args) < 1) {
+  stop("Usage: Simulation_study.R core")
+}
+core = args[1]; print(core)
+
 
 ############# Genotype generating function ############# 
 perm=function(x,prop=1,n=length(x),...){
