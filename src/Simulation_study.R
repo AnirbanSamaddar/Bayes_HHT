@@ -11,7 +11,7 @@ print(args)
 if (length(args) < 1) {
   stop("Usage: Simulation_study.R core")
 }
-core = args[1]; print(core)
+core = eval(parse(text=args[1])); print(core)
 
 
 ############# Genotype generating function ############# 
@@ -46,12 +46,12 @@ seq_run = function(id,core = 1){
   ### For replication of results
   set.seed(19092264+jobID)
   if(core == 1){   ### cor = 0.9 h2 = 1.25% S = 20 n=10K
-    shape1_par=0.5  # r ~ 0.9
-    h2_par=5/400
-    SSize=10000
-    nSNP_par=525
-    Oracle = 30	
-    QTL=seq(25,500,by=25)
+    shape1_par=0.5            # r ~ 0.9. Decreasing this means more correlation.
+    h2_par=5/400              # h2 ~ 1.25%. Increasing this means higher signal-to-noise ratio.
+    SSize=10000               # Sample size.
+    nSNP_par=525              # Number of non-zero effects.
+    Oracle = 30	              # Hyperparameter for SuSiE and Bayesian Spike-and-Slab model.
+    QTL=seq(25,500,by=25)     # Position of the non-zero effects.
   }else if(core == 2){   ### cor = 0.9 h2 = 1.25% S = 20 n=50K
     shape1_par=0.5  # r ~ 0.9
     h2_par=5/400
