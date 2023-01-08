@@ -1,4 +1,87 @@
 ###Group-wise inference functions needed
+###Node-wise test approach. Input: merge matrix, nSNP, alpha
+Method_Node_wise = function(alpha=0.05,nSNP=100,merge_mt,B){
+  
+  stages = merge_mt
+  
+  
+  #### Function to recreate clusters from Merge matrix  
+  f1 = function(m){
+    
+    resolutions_1 = list(NULL)
+    children_id = rep(NA,(nSNP+nrow(m)))
+    for(i in 1:nrow(m)){
+      if(max(m[i,])<0){
+        resolutions_1[[i]] = -c(m[i,1],m[i,2])
+        children_id[nSNP+i] = paste(-c(m[i,1],m[i,2]),collapse=",")
+      }else if(min(m[i,])<0 & 0<max(m[i,])){
+        resolutions_1[[i]] = c(resolutions_1[[m[i,(m[i,]>0)]]],-m[i,(m[i,]<0)])
+        tmp1 = which(m[i,]>0)
+        tmp2 = which(m[i,]<0)
+        children_id[nSNP+i] = paste(c((nSNP+m[i,tmp1]),-m[i,tmp2]),collapse=",")
+      }else{
+        resolutions_1[[i]] = c(resolutions_1[[m[i,1]]],resolutions_1[[m[i,2]]])
+        children_id[nSNP+i] = paste(nSNP+m[i,],collapse=",")
+      }
+    }   
+    
+    a = lapply(1:nSNP,function(i){return(i)})
+    b = lapply(1:(nSNP+nrow(m)),function(i){ifelse(i<=nSNP,return(a[[i]]),return(resolutions_1[[(i-nSNP)]]))})
+    return(list(b,children_id))
+  }
+  
+  tmp = f1(stages)
+  resolutions = tmp[[1]]
+  children_id = tmp[[2]]
+  
+  
+  #### Function for finding the discovery set level BFDR while controlling local FDR of all clusters at level t
+  
+  
+  Inc_prob_calc = function(l){
+    
+    inc_prob = unlist(lapply(l,function(a) mean(apply(as.matrix(B[,a])!=0,1,any))))
+    return(inc_prob)
+  }
+  
+  Inc_prob = Inc_prob_calc(resolutions)
+  FDR_ctrl_res = resolutions
+    
+  #### Finding the optimal t value for Node-wise BFDR control
+  Ordered_inc_prob = sort(Inc_prob,decreasing=TRUE)
+  t_min = ifelse(Ordered_inc_prob[1]<(1-alpha),1.1,Ordered_inc_prob[max(which(Ordered_inc_prob>=(1-alpha)))]) ###If I=0 then no selection
+  
+  #### Selecting the outer node clusters where FDR is controlled at level t_min 
+  S = which(Inc_prob>=t_min)
+  Rejection = Inc_prob>=t_min
+  FDR_ctrl_3 = list(NULL)
+  tmp=1
+  id = rep(NA,length(S))
+  
+  
+  for(i in S){
+    if(is.na(children_id[i])){
+      FDR_ctrl_3[[tmp]] = FDR_ctrl_res[[i]]
+      id[tmp] = i
+      tmp = tmp+1
+    }else{
+      tmp1 = as.numeric(strsplit(children_id[i],",")[[1]])
+      if(all(!Rejection[tmp1])){
+        FDR_ctrl_3[[tmp]] = FDR_ctrl_res[[i]]
+        id[tmp] = i
+        tmp = tmp+1			
+      }
+    }	
+  }
+  
+  #output = data.frame(cluster_id = seq_len(length(FDR_ctrl_3)),clusters = rep(NA,length(FDR_ctrl_3)))
+  #for(i in seq_len(length(FDR_ctrl_3))){
+  #  output$clusters[i] = paste(paste0('',FDR_ctrl_3[[i]]),collapse=',')
+  #}
+  #return(output)
+  return(list(FDR_ctrl_3,t_min))
+}
+
 ###Multi-resolution test approach. Input: merge matrix, nSNP, alpha
 Method_Bayes = function(alpha=0.05,nSNP=100,merge_mt,B){
   
