@@ -1,6 +1,4 @@
-# Structure
-
-# Introduction
+# Bayesian Hierarchical Hypothesis Testing (BHHT)
 
 # Example (Mice)
 
