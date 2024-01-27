@@ -1,3 +1,18 @@
+# Structure
+
+# Introduction
+
+# Example (Mice)
+
+# Reference
+
+# Work order
+
+1. Add the demonstrating example
+2. Change the test function
+3. Make necessary changes to the example
+4. Add Simulation 1 and Simulation 2 (using mice)
+   
 # Bayes_HHT
 Implementation of Bayesian Hierarchical Hypothesis Testing 
 
