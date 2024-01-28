@@ -1,6 +1,23 @@
 # Bayesian Hierarchical Hypothesis Testing (BHHT)
 
-# Example (Mice)
+## Example (Mice)
+### Simulation
+```
+library(BGLR)
+library(ggplot2)
+
+set.seed(195021)
+data(mice)
+QTL=round(c(65.5,62.5*2,62.5*3.5,65.2*4.1))
+p=300
+X=scale(mice.X[,1:p],scale=FALSE,center=TRUE)
+MAP=mice.map[1:p,]
+signal=rowSums(X[,QTL])
+error=rnorm(nrow(X))
+error=error*sqrt(var(signal)*90/10)
+y=signal+error
+
+```
 
 # Reference
 
