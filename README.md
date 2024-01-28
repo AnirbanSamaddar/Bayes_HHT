@@ -2,7 +2,11 @@
 
 ## Example (Mice)
 ### Simulation
-```ruby
+  - 300 SNPs
+  - 5 QTLs more or less each in the center of separate LD-block
+  - 10% heritability
+
+```ahk
 library(BGLR)
 library(ggplot2)
 
@@ -16,6 +20,12 @@ signal=rowSums(X[,QTL])
 error=rnorm(nrow(X))
 error=error*sqrt(var(signal)*90/10)
 y=signal+error
+```
+### Collecting posterior samples
+  - Five chains, each 12,000 iterations, burn-in 2,000 and thinning interval 5.
+  - BGLR software, model BayesC
+
+```ahk
 
 ```
 
