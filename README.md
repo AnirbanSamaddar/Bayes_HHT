@@ -2,7 +2,7 @@
 
 ## Example (Mice)
 ### Simulation
-```
+```json
 library(BGLR)
 library(ggplot2)
 
