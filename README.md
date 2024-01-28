@@ -2,7 +2,7 @@
 
 ## Example (Mice)
 ### Simulation
-```css
+```ruby
 library(BGLR)
 library(ggplot2)
 
