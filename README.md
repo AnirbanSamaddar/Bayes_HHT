@@ -2,7 +2,7 @@
 
 ## Example (Mice)
 ### Simulation
-```html
+```css
 library(BGLR)
 library(ggplot2)
 
