@@ -6,7 +6,7 @@
   - 5 QTLs more or less each in the center of separate LD-block
   - 10% heritability
 
-```ahk
+```applescript
 library(BGLR)
 library(ggplot2)
 
@@ -25,7 +25,7 @@ y=signal+error
   - Five chains, each 12,000 iterations, burn-in 2,000, and thinning interval 5.
   - BGLR software, model BayesC
 
-```ahk
+```applescript
 suppressMessages(
   fm<-BLRXy(y=y,ETA=list(list(X=X,model='BayesC',probIn=1/100,counts=1000,saveEffects=TRUE)),nIter=12000,burnIn=2000,verbose=FALSE)
 )
@@ -41,7 +41,7 @@ for(i in 2:5){
 ```
 ### Bayesian hierarchical hypothesis testing
 
-```ahk
+```applescript
 PIP=colMeans(B!=0)
 source("~/Bayes_HHT/src/Multi-resolution_Test_function.R")
 XX = abs(crossprod(X))
@@ -100,9 +100,9 @@ ggsave('PIP_w_discovery_seg.png',width=10)
 
 # Work order
 
-~~Add the demonstrating example~~
-- Change the test function
-- Make necessary changes to the example
+~~- Add the demonstrating example~~
+~~- Change the test function~~
+~~- Make necessary changes to the example~~
 - Add Simulation 1 and Simulation 2 (using mice)
    
 # Bayes_HHT
