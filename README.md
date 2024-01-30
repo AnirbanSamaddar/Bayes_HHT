@@ -1,6 +1,6 @@
 # Bayesian Hierarchical Hypothesis Testing (BHHT)
 
-## Example (Mice)
+## Demonstrating Example (Mice)
 ### Simulation
   - 300 SNPs
   - 5 QTLs more or less each in the center of separate LD-block
