@@ -56,7 +56,7 @@ r = hclust(as.dist(DIS))
 merge_mt = r$merge
 alpha_in = 0.05
 Bayes = function(alpha,nSNP,merge_mt,B){
-  tmp = Method_Bayes(alpha=alpha,nSNP=nSNP,merge_mt=merge_mt,B=B)[[1]]
+  tmp = Bayes_HHT(alpha=alpha,nSNP=nSNP,merge_mt=merge_mt,B=B,type='Bayes')
   output = data.frame(cluster_id = seq_len(length(tmp)),clusters = rep(NA,length(tmp)),cPIP = rep(NA,length(tmp)))
   for(i in seq_len(length(tmp))){
     output$clusters[i] = paste(paste0('',tmp[[i]]),collapse=',')
