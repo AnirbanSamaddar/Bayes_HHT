@@ -105,6 +105,7 @@ ggsave('PIP_w_discovery_seg.png',width=10)
 ~~- Make necessary changes to the example~~
 - Add Simulation 1 and Simulation 2 (using mice)
 - Fill the texts in the landing page
+- Modify the output of Bayes_HHT
    
 # Bayes_HHT
 Implementation of Bayesian Hierarchical Hypothesis Testing 
