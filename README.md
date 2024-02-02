@@ -1,43 +1,53 @@
 # Bayesian Hierarchical Hypothesis Testing (BHHT)
 
+
+The function `Bayes_HHT()` takes posterior samples from a Bayesian variable selection model (`B`, effects in columns, samples in rows), a hierarchical clustering of the predictors (i.e., the columns of `X` in `y=Xb+e`), and a Bayesian FDR threshold (`alpha`) and returns credible sets, constiting on predictors that are jointly associated with the outcome. Further details about the methodology can be found in (Samaddar, Maiti, and de los Campos, 2023)[]. The following example demonstrate the use of the function.
+
+
+
 ## Demonstrating Example (Mice)
-### Simulation
+
+To illustrate the use of the function we simulate a phenotype using 300 SNPs, 5 with non-zero effects, and a 10% heritability (i.e., model R-squared).
+
+### 1) Simulation
   - 300 SNPs
   - 5 QTLs more or less each in the center of separate LD-block
   - 10% heritability
 
-```applescript
-library(BGLR)
-library(ggplot2)
+```r
+ library(BGLR)
+ library(ggplot2)
 
-set.seed(195021)
-data(mice)
-QTL=round(c(65.5,62.5*2,62.5*3.5,65.2*4.1))
-p=300
-X=scale(mice.X[,1:p],scale=FALSE,center=TRUE)
-MAP=mice.map[1:p,]
-signal=rowSums(X[,QTL])
-error=rnorm(nrow(X))
-error=error*sqrt(var(signal)*90/10)
-y=signal+error
+ set.seed(195021)
+ data(mice)
+ QTL=round(c(65.5,62.5*2,62.5*3.5,65.2*4.1))
+ p=300
+ X=scale(mice.X[,1:p],scale=FALSE,center=TRUE)
+ MAP=mice.map[1:p,]
+ signal=rowSums(X[,QTL])
+ error=rnorm(nrow(X))
+ error=error*sqrt(var(signal)*90/10)
+ y=signal+error
 ```
-### Collecting posterior samples
+### 2) Collecting posterior samples
   - Five chains, each 12,000 iterations, burn-in 2,000, and thinning interval 5.
   - BGLR software, model BayesC
 
-```applescript
-suppressMessages(
+After running the code below, the matrix `B` contains the posterior samples (effects in columns, samples in rows).
+
+```r
+ suppressMessages(
   fm<-BLRXy(y=y,ETA=list(list(X=X,model='BayesC',probIn=1/100,counts=1000,saveEffects=TRUE)),nIter=12000,burnIn=2000,verbose=FALSE)
-)
-B=readBinMat('ETA_1_b.bin')
-for(i in 2:5){
-  print(i)
-	tmp=sample(1:p,size=p)
-	suppressMessages(
- 	  fm<-BLRXy(y=y,ETA=list(list(X=X[,tmp],model='BayesC',probIn=1/100,counts=1000,saveEffects=TRUE)),nIter=12000,burnIn=2000,verbose=FALSE)
-	)
-	B=rbind(B,readBinMat('ETA_1_b.bin')[,order(tmp)])
-}
+ )
+ B=readBinMat('ETA_1_b.bin')
+ for(i in 2:5){
+   print(i)
+   tmp=sample(1:p,size=p)
+   suppressMessages(
+     fm<-BLRXy(y=y,ETA=list(list(X=X[,tmp],model='BayesC',probIn=1/100,counts=1000,saveEffects=TRUE)),nIter=12000,burnIn=2000,verbose=FALSE)
+    )
+    B=rbind(B,readBinMat('ETA_1_b.bin')[,order(tmp)])
+ }
 ```
 ### Bayesian hierarchical hypothesis testing
 
