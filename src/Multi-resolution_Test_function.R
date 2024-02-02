@@ -1,5 +1,5 @@
 ###Group-wise inference functions
-Bayes_HHT = function(alpha,nSNP,merge_mt,B,type='Bayes'){
+Bayes_HHT = function(alpha,nSNP,merge_mt,B,type='Bayes',output_type='table'){
   ###Node-wise test approach. Input: merge matrix, nSNP, alpha
   Method_Node_wise = function(alpha=0.05,nSNP=100,merge_mt,B){
     stages = merge_mt
@@ -340,15 +340,80 @@ Bayes_HHT = function(alpha,nSNP,merge_mt,B,type='Bayes'){
     return(FDR_ctrl_3)  
   }
 
-  if(type=='Bayes'){
-    return(Method_Bayes(alpha=alpha,nSNP=nSNP,merge_mt=merge_mt,B=B))
-  }else if(type=='Node_wise'){
-    return(Method_Node_wise(alpha=alpha,nSNP=nSNP,merge_mt=merge_mt,B=B))
-  }else if(type=='Subfam'){
-    return(Method_Subfam_test(alpha=alpha,nSNP=nSNP,merge_mt=merge_mt,B=B))
-  }else if(type=='Ind_lvl'){
-    return(Method_ind_lvl(alpha=alpha,nSNP=nSNP,B=B))
+  if(output_type=='table'){
+    if(type=='Bayes'){
+      Bayes = function(threshold,nSNP,merge_mt,B,prune=0){
+        tmp = Method_Bayes(alpha=threshold,nSNP=nSNP,merge_mt=merge_mt,B=B)
+        output = data.frame(cluster_id = seq_len(length(tmp)),clusters = rep(NA,length(tmp)),cPIP = rep(NA,length(tmp))
+                  , threshold = rep(threshold,length(tmp)), method = rep('Bayes',length(tmp)))
+        for(i in seq_len(length(tmp))){
+          tmp1 = tmp[[i]]
+          id_prune = which(apply(as.matrix(B[,tmp1])!=0,2,mean)<=prune)
+          tmp2 = if(length(id_prune)==0){tmp1}else{tmp1[-id_prune]}
+          output$clusters[i] = paste(paste0('',tmp2),collapse=',')
+          output$cPIP[i] = mean(apply(as.matrix(B[,tmp2])!=0,1,any))
+        }
+        return(output)
+      }
+      return(Bayes(threshold=alpha,nSNP=nSNP,merge_mt=merge_mt,B=B))  
+    }else if(type=='Node_wise'){
+      Node_wise = function(threshold,nSNP,merge_mt,B,prune=0){
+        tmp = Method_Node_wise(alpha=threshold,nSNP=nSNP,merge_mt=merge_mt,B=B)
+        output = data.frame(cluster_id = seq_len(length(tmp)),clusters = rep(NA,length(tmp)),cPIP = rep(NA,length(tmp))
+                  , threshold = rep(threshold,length(tmp)), method = rep('Node_wise',length(tmp)))
+        for(i in seq_len(length(tmp))){
+          tmp1 = tmp[[i]]
+          id_prune = which(apply(as.matrix(B[,tmp1])!=0,2,mean)<=prune)
+          tmp2 = if(length(id_prune)==0){tmp1}else{tmp1[-id_prune]}
+          output$clusters[i] = paste(paste0('',tmp2),collapse=',')
+          output$cPIP[i] = mean(apply(as.matrix(B[,tmp2])!=0,1,any))
+        }
+        return(output)
+      }
+      return(Node_wise(threshold=alpha,nSNP=nSNP,merge_mt=merge_mt,B=B))  
+    }else if(type=='Subfam'){
+`    Subfam = function(threshold,nSNP,merge_mt,B,prune=0){
+      tmp = Method_Subfam_test(alpha=threshold,nSNP=nSNP,merge_mt=merge_mt,B=B)
+      output = data.frame(cluster_id = seq_len(length(tmp)),clusters = rep(NA,length(tmp)),cPIP = rep(NA,length(tmp))
+                , threshold = rep(threshold,length(tmp)), method = rep('Subfam',length(tmp)))
+      for(i in seq_len(length(tmp))){
+        tmp1 = tmp[[i]]
+        id_prune = which(apply(as.matrix(B[,tmp1])!=0,2,mean)<=prune)
+        tmp2 = if(length(id_prune)==0){tmp1}else{tmp1[-id_prune]}
+        output$clusters[i] = paste(paste0('',tmp2),collapse=',')
+        output$cPIP[i] = mean(apply(as.matrix(B[,tmp2])!=0,1,any))
+      }
+      return(output)
+    }
+      return(Subfam(threshold=alpha,nSNP=nSNP,merge_mt=merge_mt,B=B))
+    }else if(type=='Ind_lvl'){
+      Individual = function(threshold,nSNP,B){
+        tmp = Method_ind_lvl(alpha=threshold,nSNP=nSNP,B=B)[[1]]
+        output = data.frame(cluster_id = seq_len(length(tmp)),clusters = rep(NA,length(tmp)),cPIP = rep(NA,length(tmp))
+                  , threshold = rep(threshold,length(tmp)), method = rep('Ind_lvl',length(tmp)))
+        for(i in seq_len(length(tmp))){
+          output$clusters[i] = paste(paste0('',tmp[[i]]),collapse=',')
+          output$cPIP[i] = mean(apply(as.matrix(B[,tmp[[i]]])!=0,1,any))
+        }
+        return(output)
+      }
+      return(Individual(threshold=alpha,nSNP=nSNP,B=B))
+    }else{
+      stop('Invalid type')
+    }
+  }else if(output_type=='list'){
+    if(type=='Bayes'){
+      return(Method_Bayes(alpha=alpha,nSNP=nSNP,merge_mt=merge_mt,B=B))
+    }else if(type=='Node_wise'){
+      return(Method_Node_wise(alpha=alpha,nSNP=nSNP,merge_mt=merge_mt,B=B))
+    }else if(type=='Subfam'){
+      return(Method_Subfam_test(alpha=alpha,nSNP=nSNP,merge_mt=merge_mt,B=B))
+    }else if(type=='Ind_lvl'){
+      return(Method_ind_lvl(alpha=alpha,nSNP=nSNP,B=B))
+    }else{
+      stop('Invalid type')
+    }
   }else{
-    stop('Invalid type')
+    stop('Invalid output_type')
   }
 }
