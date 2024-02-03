@@ -372,7 +372,7 @@ Bayes_HHT = function(alpha,nSNP,merge_mt,B,type='Bayes',output_type='table'){
       }
       return(Node_wise(threshold=alpha,nSNP=nSNP,merge_mt=merge_mt,B=B))  
     }else if(type=='Subfam'){
-`    Subfam = function(threshold,nSNP,merge_mt,B,prune=0){
+      Subfam = function(threshold,nSNP,merge_mt,B,prune=0){
       tmp = Method_Subfam_test(alpha=threshold,nSNP=nSNP,merge_mt=merge_mt,B=B)
       output = data.frame(cluster_id = seq_len(length(tmp)),clusters = rep(NA,length(tmp)),cPIP = rep(NA,length(tmp))
                 , threshold = rep(threshold,length(tmp)), method = rep('Subfam',length(tmp)))
