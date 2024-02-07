@@ -82,7 +82,7 @@ p2=ggplot(DF,aes(x=Mbp,y=PIP))+
   scale_shape_manual(values=c(16,1))+
   scale_size_manual(values=c(3,1.5))+
   ylim(c(0,1))+
-  geom_hline(yintercept=c(.9),linetype='dashed')+
+  geom_hline(yintercept=c(.95),linetype='dashed')+
   geom_vline(xintercept=mice.map$mbp[QTL],linetype='dashed',color='grey50')
 
 for(i in 1:nrow(DS_BHHT)){
