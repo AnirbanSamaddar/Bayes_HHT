@@ -65,20 +65,7 @@ for(a in 1:(p-1)){
 r = hclust(as.dist(DIS))
 merge_mt = r$merge
 alpha_in = 0.05
-Bayes = function(alpha,nSNP,merge_mt,B){
-  tmp = Bayes_HHT(alpha=alpha,nSNP=nSNP,merge_mt=merge_mt,B=B,type='Bayes')
-  output = data.frame(cluster_id = seq_len(length(tmp)),clusters = rep(NA,length(tmp)),cPIP = rep(NA,length(tmp)))
-  for(i in seq_len(length(tmp))){
-    output$clusters[i] = paste(paste0('',tmp[[i]]),collapse=',')
-    output$cPIP[i] = mean(apply(B[,tmp[[i]]]!=0,1,any))
-    output$first[i]=min(tmp[[i]])
-    output$last[i]=max(tmp[[i]])
-    output$size[i]=length(tmp[[i]])
-  }
-  return(output)
-}
-DS_BHHT = Bayes(alpha=alpha_in,nSNP=p,merge_mt=merge_mt,B=B)
-ds_bht=eval(parse(text=paste0('c(',sapply(X=DS_BHHT['clusters'],FUN=paste,collapse=','),')')))
+DS_BHHT = Bayes_HHT(alpha=alpha_in,nSNP=p,merge_mt=merge_mt,B=B,type='Bayes',output_type='table')ds_bht=eval(parse(text=paste0('c(',sapply(X=DS_BHHT['clusters'],FUN=paste,collapse=','),')')))
 PIP = apply(B!=0,2,mean)
 
 DF=data.frame("Mbp"=MAP$mbp,PIP=PIP,"Variant Type"='Marker',check.names=F)
