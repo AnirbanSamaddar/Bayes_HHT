@@ -65,7 +65,9 @@ for(a in 1:(p-1)){
 r = hclust(as.dist(DIS))
 merge_mt = r$merge
 alpha_in = 0.05
-DS_BHHT = Bayes_HHT(alpha=alpha_in,nSNP=p,merge_mt=merge_mt,B=B,type='Bayes',output_type='table')ds_bht=eval(parse(text=paste0('c(',sapply(X=DS_BHHT['clusters'],FUN=paste,collapse=','),')')))
+
+DS_BHHT = Bayes_HHT(alpha=alpha_in,nSNP=p,merge_mt=merge_mt,B=B,type='Bayes',output_type='table')
+ds_bht=eval(parse(text=paste0('c(',sapply(X=DS_BHHT['clusters'],FUN=paste,collapse=','),')')))
 PIP = apply(B!=0,2,mean)
 
 DF=data.frame("Mbp"=MAP$mbp,PIP=PIP,"Variant Type"='Marker',check.names=F)
