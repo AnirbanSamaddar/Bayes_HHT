@@ -102,8 +102,9 @@ ggsave('PIP_w_discovery_seg.png',width=10)
 ~~- Add the demonstrating example~~
 ~~- Change the test function~~
 ~~- Make necessary changes to the example~~
-- Add Simulation 1 and Simulation 2 (using mice)
-- Fill the texts in the landing page
+~~- Add Simulation 1 and Simulation 2 (using mice)~~
+- Create readme or markdown files and demonstrate one setting for both simulation 1 and 2
+- Fill the texts on the landing page
 - Modify the output of Bayes_HHT
    
 # Bayes_HHT
