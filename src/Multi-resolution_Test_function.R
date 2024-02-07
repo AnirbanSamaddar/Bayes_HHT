@@ -352,6 +352,9 @@ Bayes_HHT = function(alpha,nSNP,merge_mt,B,type='Bayes',output_type='table'){
           tmp2 = if(length(id_prune)==0){tmp1}else{tmp1[-id_prune]}
           output$clusters[i] = paste(paste0('',tmp2),collapse=',')
           output$cPIP[i] = mean(apply(as.matrix(B[,tmp2])!=0,1,any))
+          output$first[i]=min(tmp[[i]])
+          output$last[i]=max(tmp[[i]])
+          output$size[i]=length(tmp[[i]])
         }
         return(output)
       }
@@ -367,6 +370,9 @@ Bayes_HHT = function(alpha,nSNP,merge_mt,B,type='Bayes',output_type='table'){
           tmp2 = if(length(id_prune)==0){tmp1}else{tmp1[-id_prune]}
           output$clusters[i] = paste(paste0('',tmp2),collapse=',')
           output$cPIP[i] = mean(apply(as.matrix(B[,tmp2])!=0,1,any))
+          output$first[i]=min(tmp[[i]])
+          output$last[i]=max(tmp[[i]])
+          output$size[i]=length(tmp[[i]])
         }
         return(output)
       }
@@ -377,11 +383,14 @@ Bayes_HHT = function(alpha,nSNP,merge_mt,B,type='Bayes',output_type='table'){
       output = data.frame(cluster_id = seq_len(length(tmp)),clusters = rep(NA,length(tmp)),cPIP = rep(NA,length(tmp))
                 , threshold = rep(threshold,length(tmp)), method = rep('Subfam',length(tmp)))
       for(i in seq_len(length(tmp))){
-        tmp1 = tmp[[i]]
-        id_prune = which(apply(as.matrix(B[,tmp1])!=0,2,mean)<=prune)
-        tmp2 = if(length(id_prune)==0){tmp1}else{tmp1[-id_prune]}
-        output$clusters[i] = paste(paste0('',tmp2),collapse=',')
-        output$cPIP[i] = mean(apply(as.matrix(B[,tmp2])!=0,1,any))
+          tmp1 = tmp[[i]]
+          id_prune = which(apply(as.matrix(B[,tmp1])!=0,2,mean)<=prune)
+          tmp2 = if(length(id_prune)==0){tmp1}else{tmp1[-id_prune]}
+          output$clusters[i] = paste(paste0('',tmp2),collapse=',')
+          output$cPIP[i] = mean(apply(as.matrix(B[,tmp2])!=0,1,any))
+          output$first[i]=min(tmp[[i]])
+          output$last[i]=max(tmp[[i]])
+          output$size[i]=length(tmp[[i]])
       }
       return(output)
     }
@@ -394,6 +403,9 @@ Bayes_HHT = function(alpha,nSNP,merge_mt,B,type='Bayes',output_type='table'){
         for(i in seq_len(length(tmp))){
           output$clusters[i] = paste(paste0('',tmp[[i]]),collapse=',')
           output$cPIP[i] = mean(apply(as.matrix(B[,tmp[[i]]])!=0,1,any))
+          output$first[i]=min(tmp[[i]])
+          output$last[i]=max(tmp[[i]])
+          output$size[i]=length(tmp[[i]])
         }
         return(output)
       }
