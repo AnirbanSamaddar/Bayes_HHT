@@ -85,11 +85,11 @@ p2=ggplot(DF,aes(x=Mbp,y=PIP))+
   geom_hline(yintercept=c(.9),linetype='dashed')+
   geom_vline(xintercept=mice.map$mbp[QTL],linetype='dashed',color='grey50')
 
-  for(i in 1:nrow(DS_BHHT)){
-		p2=p2+annotate("rect", xmin = mice.map$mbp[DS_BHHT$first[i]]-.2, 
-		             xmax = mice.map$mbp[DS_BHHT$last[i]]+.2, ymin =0, 
-		             ymax = DS_BHHT$cPIP[i],alpha = .1,fill = "blue")
-   }
+for(i in 1:nrow(DS_BHHT)){
+  p2=p2+annotate("rect", xmin = mice.map$mbp[DS_BHHT$first[i]]-.2, 
+		xmax = mice.map$mbp[DS_BHHT$last[i]]+.2, ymin =0, 
+		ymax = DS_BHHT$cPIP[i],alpha = .1,fill = "blue")
+}
 dir.create('~/Toy_example/',recursive=TRUE)
 setwd('~/Toy_example/')
 ggsave('PIP_w_discovery_seg.png',width=10)
