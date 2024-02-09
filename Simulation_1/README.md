@@ -4,6 +4,7 @@
 - S: 20
 - n: 50,000
 - $\rho$: 0.9
+- $h^2$: 1.25%
 
 ### Create output directory and load packages
 
@@ -15,7 +16,7 @@ library(susieR)
 library(BGData)
 ```
 
-### Data generation
+### Genotype generation functions
 
 ```applescript
 perm=function(x,prop=1,n=length(x),...){
@@ -39,4 +40,110 @@ getBlock=function(n,p,freq=0.2,shape1=2,shape2=.5,replace=T){
   
 }
 
+```
+
+### Setting the parameters to generate the data
+
+```applescript
+setwd('~/output/')
+jobID = 1
+set.seed(19092264+jobID)
+shape1_par=0.5 
+h2_par= 0.0125
+SSize=50000
+nSNP_par=525
+S=20
+Oracle=S+10
+Dis_z=25
+if(S==20){
+  if(Dis_z == 25){
+  QTL=seq(25,500,by=25)
+  }else{
+    QTL=seq(from=20,by=Dis_z,length.out=S)
+  }
+}else if(S==5){
+  if(Dis_z == 100){
+    QTL=seq(100,500,by=100)
+  print(QTL)
+  }else{
+    QTL=seq(from=20,by=Dis_z,length.out=S)
+  }
+}
+
+Data_prep = function(shape1,h2,SSize,nSNP,QTL,shape2=3){
+  n = SSize
+  nQTL = length(QTL)  
+  blsize = nSNP
+  X = array(NA,dim = c(n,nSNP))
+  X[,1:blsize] = getBlock(n,blsize,shape1=shape1,shape2=shape2,replace=T)
+  beta = rnorm(nQTL) + 1
+  signal = X[,QTL]%*%beta
+  vG=var(signal)
+  vE=vG*(1-h2)/h2
+  error=rnorm(n=n,sd=sqrt(vE))
+  y=signal+error
+  rm(list = c("beta","signal","vG","vE","error"))
+  X = matrix(as.double(X),nrow=SSize)  
+  return(list(X,y))
+}
+
+master_input = Data_prep(shape1_par,h2_par,SSize,nSNP_par,QTL)
+X = master_input[[1]]
+y = master_input[[2]]
+```
+## Run SuSiE
+
+```applescript
+message('Running Susie ...')
+fit.susie = susie(X,y,L=Oracle)
+B = t(susie_get_posterior_samples(fit.susie,15000)$b)
+SuSiE = function(X,B,threshold=a){
+    out_list = susie_get_cs(fit.susie,X,coverage=(1-threshold))$cs
+    output = data.frame(cluster_id = seq_len(length(out_list)),clusters = rep(NA,length(out_list))
+              ,cPIP = rep(NA,length(out_list)), threshold = rep(threshold,length(out_list)))
+    for(i in seq_len(length(out_list))){
+      output$clusters[i] = paste(paste0('',out_list[[i]]),collapse=',')
+      output$cPIP[i] = mean(apply(as.matrix(B[,out_list[[i]]])!=0,1,any))
+    }
+    return(output)
+}
+threshold = c(0,0.02,0.05,0.1,0.2)
+output = SuSiE(X=X,B=B,threshold=threshold[1])
+for(a in threshold[2:length(threshold)]){tmp=SuSiE(X=X,B=B,threshold=a);output=rbind(output,tmp)}
+output$method = rep('Susie',nrow(output))
+#print(dim(B))
+samples = list(susie=B)
+```
+## Run BGLR
+```applescript
+message('Running BGLR ...')
+Fit.BGLR=function(X,y){
+    thin = 5
+    prob_inc = Oracle/nSNP_par
+    burnIn = 2500
+    nIter = 15000
+    fm = BLRXy(y=y,ETA=list(list(X=X,model='BayesC',probIn=prob_inc,counts=110,saveEffects=TRUE)),nIter=nIter,burnIn=burnIn,verbose=FALSE)
+    samples = readBinMat('ETA_1_b.bin')
+    return(samples)
+}
+B = Fit.BGLR(X=X,y=y)
+for(i in 2:4){
+  B=rbind(B,Fit.BGLR(X=X,y=y))
+}
+samples$BVS = B
+```
+## Perform hierarchical clustering on the predictors
+```applescript
+X=preprocess(X,scale=TRUE,center=TRUE)
+XX = round(abs(crossprod(X)/SSize),2)
+p = ncol(XX)
+DIS = matrix(0,nrow=p,ncol=p)
+for(a in 1:(p-1)){
+  for(b in (a+1):p){
+    DIS[a,b] = sqrt(XX[a,a]+XX[b,b]-2*XX[a,b])
+    DIS[b,a] = DIS[a,b]	
+  }
+}
+r = hclust(as.dist(DIS))
+merge_mt = r$merge
 ```
