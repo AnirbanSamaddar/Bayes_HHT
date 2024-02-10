@@ -151,7 +151,7 @@ merge_mt = r$merge
 ## Run BHHT with Bayesian FDR error control
 ```applescript
 Bayes = function(threshold,nSNP,merge_mt,B,prune=0){
-    tmp = Method_Bayes(alpha=threshold,nSNP=nSNP,merge_mt=merge_mt,B=B)[[1]]
+    tmp = Bayes_HHT(alpha=threshold,nSNP=nSNP,merge_mt=merge_mt,B=B,type='Bayes',output_type='list')
     output = data.frame(cluster_id = seq_len(length(tmp)),clusters = rep(NA,length(tmp)),cPIP = rep(NA,length(tmp))
               , threshold = rep(threshold,length(tmp)), method = rep('Bayes',length(tmp)))
     for(i in seq_len(length(tmp))){
@@ -162,6 +162,33 @@ Bayes = function(threshold,nSNP,merge_mt,B,prune=0){
       output$cPIP[i] = mean(apply(as.matrix(B[,tmp2])!=0,1,any))
     }
     return(output)
-  }  
-
+}
+message('Running MRI Bayes ...')
+output = rbind(output,Bayes(threshold=threshold[1],nSNP=p,merge_mt=merge_mt,B=B,prune=0))
+for(a in threshold[2:length(threshold)]){tmp=Subfam(threshold=a,nSNP=p,merge_mt=merge_mt,B=B,prune=0);output=rbind(output,tmp)}  
+```
+## Run SNP level testing
+```applescript
+Individual = function(threshold,nSNP,B){
+    tmp = Bayes_HHT(alpha=threshold,nSNP=nSNP,merge_mt=merge_mt,B=B,type='Ind_lvl',output_type='list')
+    output = data.frame(cluster_id = seq_len(length(tmp)),clusters = rep(NA,length(tmp)),cPIP = rep(NA,length(tmp))
+              , threshold = rep(threshold,length(tmp)), method = rep('Ind_lvl',length(tmp)))
+    for(i in seq_len(length(tmp))){
+      output$clusters[i] = paste(paste0('',tmp[[i]]),collapse=',')
+      output$cPIP[i] = mean(apply(as.matrix(B[,tmp[[i]]])!=0,1,any))
+    }
+    return(output)
+}
+message('Running Ind lvl ...')
+output = rbind(output,Individual(threshold=threshold[1],nSNP=p,B=B))
+for(a in threshold[2:length(threshold)]){tmp=Individual(threshold=a,nSNP=p,B=B);output=rbind(output,tmp)}
+```
+## Saving the output
+```applescript
+s = getwd()
+args = paste0("n=",SSize,"_p=",nSNP_par,"_S=",S,"_shape1_par=",shape1_par,"_h2=",h2_par,"_Dis_z=",Dis_z)
+dir.create(paste0(s,'/Setting_',args,"/Rep_",jobID),recursive=TRUE)
+setwd(paste0(s,'/Setting_',args,"/Rep_",jobID))
+save(samples,file = "samples.RData")
+write.table(output,file = paste0("output.txt"),row.names=FALSE)
 ```
