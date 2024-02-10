@@ -14,6 +14,7 @@ setwd("~/output/")
 rm(list = ls())
 library(susieR)
 library(BGData)
+library(BGLR)
 ```
 
 ### Genotype generation functions
@@ -146,4 +147,21 @@ for(a in 1:(p-1)){
 }
 r = hclust(as.dist(DIS))
 merge_mt = r$merge
+```
+## Run BHHT with Bayesian FDR error control
+```applescript
+Bayes = function(threshold,nSNP,merge_mt,B,prune=0){
+    tmp = Method_Bayes(alpha=threshold,nSNP=nSNP,merge_mt=merge_mt,B=B)[[1]]
+    output = data.frame(cluster_id = seq_len(length(tmp)),clusters = rep(NA,length(tmp)),cPIP = rep(NA,length(tmp))
+              , threshold = rep(threshold,length(tmp)), method = rep('Bayes',length(tmp)))
+    for(i in seq_len(length(tmp))){
+      tmp1 = tmp[[i]]
+      id_prune = which(apply(as.matrix(B[,tmp1])!=0,2,mean)<=prune)
+      tmp2 = if(length(id_prune)==0){tmp1}else{tmp1[-id_prune]}
+      output$clusters[i] = paste(paste0('',tmp2),collapse=',')
+      output$cPIP[i] = mean(apply(as.matrix(B[,tmp2])!=0,1,any))
+    }
+    return(output)
+  }  
+
 ```
