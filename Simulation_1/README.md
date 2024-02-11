@@ -15,6 +15,7 @@ rm(list = ls())
 library(susieR)
 library(BGData)
 library(BGLR)
+library(ggplot2)
 ```
 
 ### Genotype generation functions
@@ -291,5 +292,39 @@ Data = data.frame(Data,Method = label_model,Res = label_res,n = label_n, S = lab
 ```
 ## Plotting Power vs FDR restricting maximum discovery set size to 5
 ```applescript
+output_dir = '~/output/'
+figures_dir = 'figures/'
+dir.create(paste0(output_dir,figures_dir),recursive=TRUE)
+setwd(paste0(output_dir,figures_dir))
+maxClustSize=c(5)
+DATA = Data
+alpha = c(0,0.02,0.05,0.1,0.2)
+tmp = rep(gl(length(alpha),1,labels=alpha),nrow(DATA)/length(alpha))
+DATA$alpha = tmp
+DATA = DATA[DATA$alpha!=0.2,]
+res=paste0('Resolution: ',maxClustSize[1])
+x=c(50000) 
+y=c('n:50K')
+names(y)=x
+DATA$n=recode(DATA$n,!!!y)
+DATA=DATA[DATA$Res==res,]
+DATA$n=factor(DATA$n,levels=unique(DATA$n))
+S="S:20"
+p=ggplot( DATA[DATA$S==S,],aes(x=FDR,y=Power,group=Method))+
+   facet_grid(r~n,scales='free_y')+
+   geom_line(aes(size=Method,linetype=Method,color=Method),show.legend=TRUE)+
+   scale_size_manual(name="Method",values=c(1,0.5,0.5))+
+   geom_point(aes(color=Method))+
+   geom_point(aes(shape=alpha,color=Method),size=2) + #guides(color=FALSE) +
+   labs(shape="Level") + scale_shape_manual(labels=c(0,0.02,0.05,0.1),values=c(21,22,23,24))+
+   geom_errorbar(aes(ymin=Power-Power_sd, ymax=Power+Power_sd), width=.2)+ 
+   geom_errorbar(aes(xmin=FDR-FDR_sd, xmax=FDR+FDR_sd))+
+   xlab('Empirical FDR')+ 
+   xlim(c(0,.1))+
+   geom_vline(aes(xintercept=.05),linetype='dashed',col='grey29')+
+   ggtitle(paste0('B) ', strsplit(S,split=":")[[1]][2],' Causal Variants (Max cluster size ',maxClustSize[i],')'))+
+   theme(legend.position = c(0.67, 0.3))+
+   ylim(c(0,0.82))
+ggsave(file=paste0("power_fdr_plot_res",maxClustSize[i],".png"),plot = p,height=4,width = 5)
 
 ```
