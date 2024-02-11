@@ -1,16 +1,14 @@
-## We demonstrate one setting of simulation 1 here
+## We demonstrate one setting of simulation 2 using mice genotypes
 
 ### Setting:
-- S: 20
-- n: 50,000
-- $\rho$: 0.9
+- S: 5
 - $h^2$: 1.25%
 
 ### Create output directory and load packages
 
 ```applescript
-dir.create('~/output/',recursive=TRUE)
-setwd("~/output/")
+dir.create('~/output/Simulation_2',recursive=TRUE)
+setwd("~/output/Simulation_2")
 rm(list = ls())
 library(susieR)
 library(BGData)
@@ -47,51 +45,61 @@ getBlock=function(n,p,freq=0.2,shape1=2,shape2=.5,replace=T){
 ### Setting the parameters to generate the data
 
 ```applescript
-setwd('~/output/')
-jobID = 1
-set.seed(19092264+jobID)
-shape1_par=0.5 
+setwd('~/output/Simulation_2/')
+mc = 1
+set.seed(19092264+mc)
+message("Data loading ...")
+data(mice)
+chr = sample(1:19,size=1)
+X = mice.X
+MAP = mice.map
+S=5
 h2_par= 0.0125
-SSize=50000
-nSNP_par=525
-S=20
-Oracle=S+10
-Dis_z=25
-if(S==20){
-  if(Dis_z == 25){
-  QTL=seq(25,500,by=25)
-  }else{
-    QTL=seq(from=20,by=Dis_z,length.out=S)
-  }
-}else if(S==5){
-  if(Dis_z == 100){
-    QTL=seq(100,500,by=100)
-  print(QTL)
-  }else{
-    QTL=seq(from=20,by=Dis_z,length.out=S)
-  }
-}
 
-Data_prep = function(shape1,h2,SSize,nSNP,QTL,shape2=3){
-  n = SSize
-  nQTL = length(QTL)  
-  blsize = nSNP
-  X = array(NA,dim = c(n,nSNP))
-  X[,1:blsize] = getBlock(n,blsize,shape1=shape1,shape2=shape2,replace=T)
-  beta = rnorm(nQTL) + 1
-  signal = X[,QTL]%*%beta
-  vG=var(signal)
-  vE=vG*(1-h2)/h2
-  error=rnorm(n=n,sd=sqrt(vE))
-  y=signal+error
-  rm(list = c("beta","signal","vG","vE","error"))
-  X = matrix(as.double(X),nrow=SSize)  
-  return(list(X,y))
-}
+message("Data frame with variant sets ...")
+TMP = data.frame(chr = chr, snp_id = MAP$snp_id, bp = MAP$mbp*1e6, array = TRUE)
 
-master_input = Data_prep(shape1_par,h2_par,SSize,nSNP_par,QTL)
-X = master_input[[1]]
-y = master_input[[2]]
+message('Create 500kb block filter')
+set.seed(19092264+(mc))
+start = sample(which(TMP$bp>=1e6 & TMP$bp<= (tail(TMP$bp,1)-1e6)),size=1)
+TMP$block = FALSE
+block = which(TMP$bp >= TMP$bp[start] & TMP$bp <= (TMP$bp[start] + 500e3))
+TMP$block[block] = TRUE
+
+message('Create QTL id')
+set.seed(19092264+(mc))
+cand_QTL = which(TMP$block & TMP$array)
+split_vector = split(cand_QTL, cut(seq_along(cand_QTL), breaks = S))
+QTLs = sapply(1:S,function(i){mid = floor(length(split_vector[[i]])/2);split_vector[[i]][mid]})
+TMP$QTL_flag = FALSE
+TMP$QTL_flag[QTLs] = TRUE
+
+message('Create 500kbp flank filter')
+start = head(which(TMP$block & TMP$array),1)
+end = tail(which(TMP$block & TMP$array),1)
+tmp1 = which(TMP$bp >= (TMP$bp[start] - 0.5e6) & TMP$bp <= TMP$bp[start])
+tmp2 = which(TMP$bp >= (TMP$bp[end]) & TMP$bp <= (TMP$bp[end] + 0.5e6))
+TMP$Flanks = FALSE
+TMP$Flanks[c(tmp1,tmp2)] =TRUE
+
+message("Create chunk (block + flank) ...")
+sample_set = c(1:nrow(X))
+chunk = sort(which((TMP$array & (TMP$block + TMP$Flanks))))
+core = sort(which((TMP$array & TMP$block)))
+chunk_snps = X[sample_set,chunk]
+chunk_snps = as.matrix(preprocess(chunk_snps, center = TRUE, impute = TRUE))
+core_id = which(chunk%in%core)
+qtls_id = which(core%in%which(TMP$QTL_flag))
+
+message('Generate trait')
+set.seed(19092264+(mc))
+h2 = h2_par
+Z = preprocess(X[sample_set,TMP$QTL_flag],center=TRUE,impute=TRUE)
+effect_size = matrix(1,ncol=S)
+signal = Z %*% t(effect_size)
+vE = var(signal)*(1-h2)/h2
+trait = signal + rnorm(nrow(signal),mean=0,sd=sqrt(vE))
+print(var(signal)/var(trait))
 ```
 ## Run SuSiE
 
