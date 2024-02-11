@@ -42,7 +42,7 @@ getBlock=function(n,p,freq=0.2,shape1=2,shape2=.5,replace=T){
 
 ```
 
-### Setting the parameters to generate the data
+### Generate the data
 
 ```applescript
 setwd('~/output/Simulation_2/')
@@ -55,6 +55,7 @@ X = mice.X
 MAP = mice.map
 S=5
 h2_par= 0.0125
+n=dim(X)[1]
 
 message("Data frame with variant sets ...")
 TMP = data.frame(chr = chr, snp_id = MAP$snp_id, bp = MAP$mbp*1e6, array = TRUE)
@@ -104,24 +105,57 @@ print(var(signal)/var(trait))
 ## Run SuSiE
 
 ```applescript
+set.seed(19092264+mc)
+Oracle = S+10	
 message('Running Susie ...')
-fit.susie = susie(X,y,L=Oracle)
+XX = crossprod(chunk_snps)
+Xy = t(chunk_snps) %*% trait
+yy = sum(trait^2)
+system.time(fit.susie <- susie_suff_stat(XtX=XX,Xty=Xy,yty=yy,n=n,L=Oracle))
 B = t(susie_get_posterior_samples(fit.susie,15000)$b)
-SuSiE = function(X,B,threshold=a){
-    out_list = susie_get_cs(fit.susie,X,coverage=(1-threshold))$cs
+B = B[,core_id]
+
+alphas = fit.susie$alpha[,core_id]
+pairwise_cor = cor(chunk_snps[,core_id])
+SuSiE = function(B,threshold=a){
+    out_list = list()
+    for(i in seq(Oracle)){
+      # sort the alphas[i,] in decreasing order
+      ordered_alphas = sort(alphas[i,], decreasing = TRUE)
+      # get the indices of the ordered alphas
+      ordered_alphas_index = order(alphas[i,], decreasing = TRUE)
+      ordered_alphas_cumsum = cumsum(ordered_alphas)
+      # get the minimum index of the ordered alphas that is greater than the (1-threshold)
+      if(length(which(ordered_alphas_cumsum >= (1-threshold)))==0){
+        ordered_alphas_index = NULL
+      }else if(length(which(ordered_alphas_cumsum >= (1-threshold)))==length(core_id)){
+        ordered_alphas_index = ordered_alphas_index[1]
+      }else{
+        tmp = which(ordered_alphas_cumsum < (1-threshold))
+        ordered_alphas_index = ordered_alphas_index[seq((max(tmp)+1))]
+      }
+      if(length(ordered_alphas_index)>1){
+        tmp = pairwise_cor[ordered_alphas_index,ordered_alphas_index]
+        if(min(abs(tmp))<0.5){next}else{out_list[[i]] = ordered_alphas_index}
+      }else{
+        out_list[[i]] = ordered_alphas_index
+      }
+    }
+    # remove the null elements from the list
+    out_list = out_list[!sapply(out_list, is.null)]
     output = data.frame(cluster_id = seq_len(length(out_list)),clusters = rep(NA,length(out_list))
-              ,cPIP = rep(NA,length(out_list)), threshold = rep(threshold,length(out_list)))
+              ,cPIP = rep(NA,length(out_list))
+              , threshold = rep(threshold,length(out_list)))
     for(i in seq_len(length(out_list))){
       output$clusters[i] = paste(paste0('',out_list[[i]]),collapse=',')
       output$cPIP[i] = mean(apply(as.matrix(B[,out_list[[i]]])!=0,1,any))
     }
     return(output)
 }
-threshold = c(0,0.02,0.05,0.1,0.2)
-output = SuSiE(X=X,B=B,threshold=threshold[1])
-for(a in threshold[2:length(threshold)]){tmp=SuSiE(X=X,B=B,threshold=a);output=rbind(output,tmp)}
+threshold = c(0,0.02,0.05,0.1)
+output = SuSiE(B=B,threshold=threshold[1])
+for(a in threshold[2:length(threshold)]){tmp=SuSiE(B=B,threshold=a);output=rbind(output,tmp)}
 output$method = rep('Susie',nrow(output))
-#print(dim(B))
 samples = list(susie=B)
 ```
 ## Run BGLR
