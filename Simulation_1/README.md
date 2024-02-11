@@ -322,9 +322,9 @@ p=ggplot( DATA[DATA$S==S,],aes(x=FDR,y=Power,group=Method))+
    xlab('Empirical FDR')+ 
    xlim(c(0,.1))+
    geom_vline(aes(xintercept=.05),linetype='dashed',col='grey29')+
-   ggtitle(paste0('B) ', strsplit(S,split=":")[[1]][2],' Causal Variants (Max cluster size ',maxClustSize[i],')'))+
+   ggtitle(paste0(strsplit(S,split=":")[[1]][2],' Causal Variants (Max cluster size ',maxClustSize[i],')'))+
    theme(legend.position = c(0.67, 0.3))+
    ylim(c(0,0.82))
-ggsave(file=paste0("power_fdr_plot_res",maxClustSize[i],".png"),plot = p,height=4,width = 5)
+ggsave(file=paste0("power_fdr_plot_res",maxClustSize[i],".png"),plot = p,height=8,width = 10)
 
 ```
