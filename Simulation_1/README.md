@@ -151,6 +151,7 @@ merge_mt = r$merge
 ```
 ## Run BHHT with Bayesian FDR error control
 ```applescript
+source("https://raw.githubusercontent.com/AnirbanSamaddar/Bayes_HHT/main/src/Multi-resolution_Test_function.R")
 Bayes = function(threshold,nSNP,merge_mt,B,prune=0){
     tmp = Bayes_HHT(alpha=threshold,nSNP=nSNP,merge_mt=merge_mt,B=B,type='Bayes',output_type='list')
     output = data.frame(cluster_id = seq_len(length(tmp)),clusters = rep(NA,length(tmp)),cPIP = rep(NA,length(tmp))
