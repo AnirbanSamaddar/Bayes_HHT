@@ -192,3 +192,75 @@ setwd(paste0(s,'/Setting_',args,"/Rep_",jobID))
 save(samples,file = "samples.RData")
 write.table(output,file = paste0("output.txt"),row.names=FALSE)
 ```
+## Preparing plot data
+```applescript
+rep = 1
+if(shape1_par==0.2){cor=0.99}else if(shape1_par==0.5){cor=0.9}
+res_disc_FDR_susie = array(NA,dim=c(5,100,rep,1))
+res_disc_FDR_MRHT = array(NA,dim=c(5,100,rep,1))
+res_disc_FDR_ind = array(NA,dim=c(5,100,rep,1))
+res_disc_BFDR_susie = array(NA,dim=c(5,100,rep,1))
+res_disc_BFDR_MRHT = array(NA,dim=c(5,100,rep,1))
+res_disc_BFDR_ind = array(NA,dim=c(5,100,rep,1))
+res_disc_power_susie = array(NA,dim=c(5,100,rep,1))
+res_disc_power_MRHT = array(NA,dim=c(5,100,rep,1))
+res_disc_power_ind = array(NA,dim=c(5,100,rep,1))
+id = c(1:rep)
+
+for(i in id){
+  message(i)
+  setwd(paste0(output_dir,'Setting_',args,"/Rep_",i))
+  output = read.table('output.txt',header=TRUE)
+  ### Calculating power and FDR ar fixed resolution for SuSiE
+  out_list = lapply(threshold,function(a){tmp=as.character(output$clusters[(output$method=='Susie'&output$threshold==a)]);
+                  lapply(seq_along(tmp),function(i) as.numeric(strsplit(tmp[i],',')[[1]]))})
+  c_loc_fdr = lapply(threshold,function(a){tmp=output$clusters[(output$method=='Susie'&output$threshold==a)];
+                  tmp1=output$cPIP[(output$method=='Susie'&output$threshold==a)];
+                  lapply(seq_along(tmp),function(i) if(tmp[i]==''){0}else{(1-as.numeric(tmp1[i]))})})
+  clsize_out_list = lapply(out_list,function(a) lapply(a, length))
+
+  tmp = sapply(1:100,function(j) sapply(1:length(out_list),function(k) if(length(unlist(out_list[[k]]))==0){0}else{a = which(unlist(clsize_out_list[[k]])<=j);sum(unlist(sapply(out_list[[k]][a],function(x) !any(QTL%in%x))))}))
+  tmp1 = sapply(1:100,function(j) sapply(1:length(out_list),function(k) if(length(unlist(out_list[[k]]))==0){0}else{a = which(unlist(clsize_out_list[[k]])<=j);sum(unlist(sapply(out_list[[k]][a],function(x) (QTL%in%x))))}))
+  tmp3 = sapply(1:100,function(j) sapply(1:length(out_list),function(k) if(length(unlist(out_list[[k]]))==0){0.001}else{max(sum(unlist(clsize_out_list[[k]])<=j),0.001)}))
+  tmp4 = sapply(1:100,function(j) sapply(1:length(out_list),function(k) if(length(unlist(out_list[[k]]))==0){0}else{a = which(unlist(clsize_out_list[[k]])<=j);mean(unlist(c_loc_fdr[[k]][a]))}))
+  res_disc_BFDR_susie[,,i,1] = tmp4
+  res_disc_FDR_susie[,,i,1] = tmp/tmp3
+  res_disc_power_susie[,,i,1] = tmp1/length(QTL)
+  print("#### susie done")
+
+  ### Calculating power and FDR at fixed resolution for BHHT: Bayes FDR
+  out_list = lapply(threshold,function(a){tmp=as.character(output$clusters[(output$method=='Bayes'&output$threshold==a)]);
+                  lapply(seq_along(tmp),function(i) as.numeric(strsplit(tmp[i],',')[[1]]))})
+  c_loc_fdr = lapply(threshold,function(a){tmp=output$clusters[(output$method=='Bayes'&output$threshold==a)];
+                  tmp1=output$cPIP[(output$method=='Bayes'&output$threshold==a)];
+                  lapply(seq_along(tmp),function(i) if(tmp[i]==''){0}else{(1-as.numeric(tmp1[i]))})})
+  clsize_out_list = lapply(out_list,function(a) lapply(a, length))
+
+  tmp = sapply(1:100,function(j) sapply(1:length(out_list),function(k) if(length(unlist(out_list[[k]]))==0){0}else{a = which(unlist(clsize_out_list[[k]])<=j);sum(unlist(sapply(out_list[[k]][a],function(x) !any(QTL%in%x))))}))
+  tmp1 = sapply(1:100,function(j) sapply(1:length(out_list),function(k) if(length(unlist(out_list[[k]]))==0){0}else{a = which(unlist(clsize_out_list[[k]])<=j);sum(unlist(sapply(out_list[[k]][a],function(x) (QTL%in%x))))}))
+  tmp3 = sapply(1:100,function(j) sapply(1:length(out_list),function(k) if(length(unlist(out_list[[k]]))==0){0.001}else{max(sum(unlist(clsize_out_list[[k]])<=j),0.001)}))
+  tmp4 = sapply(1:100,function(j) sapply(1:length(out_list),function(k) if(length(unlist(out_list[[k]]))==0){0}else{a = which(unlist(clsize_out_list[[k]])<=j);mean(unlist(c_loc_fdr[[k]][a]))}))
+  res_disc_BFDR_MRHT[,,i,1] = tmp4
+  res_disc_FDR_MRHT[,,i,1] = tmp/tmp3
+  res_disc_power_MRHT[,,i,1] = tmp1/length(QTL)
+  print("#### MRHT done")
+
+  ### Calculating power and FDR ar fixed resolution for Ind lvl testing
+
+  out_list = lapply(threshold,function(a){tmp=as.character(output$clusters[(output$method=='Ind_lvl'&output$threshold==a)]);
+                  lapply(seq_along(tmp),function(i) as.numeric(strsplit(tmp[i],',')[[1]]))})
+  c_loc_fdr = lapply(threshold,function(a){tmp=output$clusters[(output$method=='Ind_lvl'&output$threshold==a)];
+                  tmp1=output$cPIP[(output$method=='Ind_lvl'&output$threshold==a)];
+                  lapply(seq_along(tmp),function(i) if(tmp[i]==''){0}else{(1-as.numeric(tmp1[i]))})})
+  clsize_out_list = lapply(out_list,function(a) lapply(a, length))
+
+  tmp = sapply(1:100,function(j) sapply(1:length(out_list),function(k) if(length(unlist(out_list[[k]]))==0){0}else{a = which(unlist(clsize_out_list[[k]])<=j);sum(unlist(sapply(out_list[[k]][a],function(x) !any(QTL%in%x))))}))
+  tmp1 = sapply(1:100,function(j) sapply(1:length(out_list),function(k) if(length(unlist(out_list[[k]]))==0){0}else{a = which(unlist(clsize_out_list[[k]])<=j);sum(unlist(sapply(out_list[[k]][a],function(x) (QTL%in%x))))}))
+  tmp3 = sapply(1:100,function(j) sapply(1:length(out_list),function(k) if(length(unlist(out_list[[k]]))==0){0.001}else{max(sum(unlist(clsize_out_list[[k]])<=j),0.001)}))
+  tmp4 = sapply(1:100,function(j) sapply(1:length(out_list),function(k) if(length(unlist(out_list[[k]]))==0){0}else{a = which(unlist(clsize_out_list[[k]])<=j);mean(unlist(c_loc_fdr[[k]][a]))}))
+  res_disc_BFDR_ind[,,i,1] = tmp4
+  res_disc_FDR_ind[,,i,1] = tmp/tmp3
+  res_disc_power_ind[,,i,1] = tmp1/length(QTL)
+  print("#### ind done")
+}
+```
