@@ -163,7 +163,7 @@ Bayes = function(threshold,nSNP,merge_mt,B,prune=0){
     }
     return(output)
 }
-message('Running MRI Bayes ...')
+message('Running BHHT Bayes ...')
 output = rbind(output,Bayes(threshold=threshold[1],nSNP=p,merge_mt=merge_mt,B=B,prune=0))
 for(a in threshold[2:length(threshold)]){tmp=Subfam(threshold=a,nSNP=p,merge_mt=merge_mt,B=B,prune=0);output=rbind(output,tmp)}  
 ```
