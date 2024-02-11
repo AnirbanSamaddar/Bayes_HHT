@@ -158,9 +158,10 @@ for(a in threshold[2:length(threshold)]){tmp=SuSiE(B=B,threshold=a);output=rbind
 output$method = rep('Susie',nrow(output))
 samples = list(susie=B)
 ```
-## Run BGLR
+## Run BGLR (WIP)
 ```applescript
 message('Running BGLR ...')
+set.seed(19092264+mc)
 Fit.BGLR=function(X,y){
     thin = 5
     prob_inc = Oracle/nSNP_par
