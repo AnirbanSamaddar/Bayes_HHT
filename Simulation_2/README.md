@@ -164,23 +164,22 @@ message('Running BGLR ...')
 set.seed(19092264+mc)
 Fit.BGLR=function(X,y){
     thin = 5
-    prob_inc = Oracle/nSNP_par
+    prob_inc = Oracle/ncol(X)
     burnIn = 2500
     nIter = 15000
     fm = BLRXy(y=y,ETA=list(list(X=X,model='BayesC',probIn=prob_inc,counts=110,saveEffects=TRUE)),nIter=nIter,burnIn=burnIn,verbose=FALSE)
     samples = readBinMat('ETA_1_b.bin')
     return(samples)
 }
-B = Fit.BGLR(X=X,y=y)
+B = Fit.BGLR(X=chunk_snps,y=trait)[,core_id]
 for(i in 2:4){
-  B=rbind(B,Fit.BGLR(X=X,y=y))
+  B=rbind(B,Fit.BGLR(X=chunk_snps,y=trait)[,core_id])
 }
 samples$BVS = B
 ```
 ## Perform hierarchical clustering on the predictors
 ```applescript
-X=preprocess(X,scale=TRUE,center=TRUE)
-XX = round(abs(crossprod(X)/SSize),2)
+XX = abs(XX[core_id,core_id]/n)
 p = ncol(XX)
 DIS = matrix(0,nrow=p,ncol=p)
 for(a in 1:(p-1)){
