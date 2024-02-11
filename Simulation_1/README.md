@@ -192,7 +192,7 @@ setwd(paste0(s,'/Setting_',args,"/Rep_",jobID))
 save(samples,file = "samples.RData")
 write.table(output,file = paste0("output.txt"),row.names=FALSE)
 ```
-## Preparing plot data
+## Preparing the plot data
 ```applescript
 output_dir = '~/output/'
 rep = 1
@@ -288,4 +288,8 @@ label_n = rep(gl(1,500,labels = SSize),3)
 label_S = rep(gl(1,500,labels = paste0("S:",length(QTL))),3)
 label_r = rep(gl(1,(500*3),labels = paste0("r:",cor)),1)
 Data = data.frame(Data,Method = label_model,Res = label_res,n = label_n, S = label_S, r = label_r)
+```
+## Plotting Power vs FDR restricting maximum discovery set size to 5
+```applescript
+
 ```
