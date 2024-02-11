@@ -194,6 +194,7 @@ write.table(output,file = paste0("output.txt"),row.names=FALSE)
 ```
 ## Preparing plot data
 ```applescript
+output_dir = '~/output/'
 rep = 1
 if(shape1_par==0.2){cor=0.99}else if(shape1_par==0.5){cor=0.9}
 res_disc_FDR_susie = array(NA,dim=c(5,100,rep,1))
@@ -263,4 +264,28 @@ for(i in id){
   res_disc_power_ind[,,i,1] = tmp1/length(QTL)
   print("#### ind done")
 }
+f1 = function(x) mean(x,na.rm=T)
+f2 = function(x) sd(x,na.rm=T)
+Data = data.frame(FDR = c(c(apply(res_disc_FDR_susie,c(1,2,4),f1)),c(apply(res_disc_FDR_MRHT,c(1,2,4),f1))
+                    ,c(apply(res_disc_FDR_ind,c(1,2,4),f1))),
+                    Power = c(c(apply(res_disc_power_susie,c(1,2,4),f1)),c(apply(res_disc_power_MRHT,c(1,2,4),f1))
+                    ,c(apply(res_disc_power_ind,c(1,2,4),f1))),
+                    BFDR = c(c(apply(res_disc_BFDR_susie,c(1,2,4),f1)),c(apply(res_disc_BFDR_MRHT,c(1,2,4),f1))
+                    ,c(apply(res_disc_BFDR_ind,c(1,2,4),f1))),
+                    FDR_sd = c(c(apply(res_disc_FDR_susie,c(1,2,4),f2))/sqrt(rep),
+                    c(apply(res_disc_FDR_MRHT,c(1,2,4),f2))/sqrt(rep),
+                    c(apply(res_disc_FDR_ind,c(1,2,4),f2))/sqrt(rep)),
+                    Power_sd = c(c(apply(res_disc_power_susie,c(1,2,4),f2))/sqrt(rep),
+                    c(apply(res_disc_power_MRHT,c(1,2,4),f2))/sqrt(rep),
+                    c(apply(res_disc_power_ind,c(1,2,4),f2))/sqrt(rep)),
+                    BFDR_sd = c(c(apply(res_disc_BFDR_susie,c(1,2,4),f2))/sqrt(rep),
+                    c(apply(res_disc_BFDR_MRHT,c(1,2,4),f2))/sqrt(rep),
+                    c(apply(res_disc_BFDR_ind,c(1,2,4),f2))/sqrt(rep)))
+Data = data.frame(Data,FDR_LB = Data$FDR - 1.96*Data$FDR_sd,FDR_UB = Data$FDR + 1.96*Data$FDR_sd,Power_LB = Data$Power - 1.96*Data$Power_sd,Power_UB = Data$Power + 1.96*Data$Power_sd,BFDR_LB = Data$BFDR - 1.96*Data$BFDR_sd,BFDR_UB = Data$BFDR + 1.96*Data$BFDR_sd)
+label_model = c(rep("SuSiE",(500*1)),rep("DS-BFDR",(500*1)),rep("SNP-PIP",(500*1)))
+label_res = rep(gl(100,5,labels=sapply(1:100,function(i) paste0("Resolution: ",i))),(3*1)) 
+label_n = rep(gl(1,500,labels = SSize),3)
+label_S = rep(gl(1,500,labels = paste0("S:",length(QTL))),3)
+label_r = rep(gl(1,(500*3),labels = paste0("r:",cor)),1)
+Data = data.frame(Data,Method = label_model,Res = label_res,n = label_n, S = label_S, r = label_r)
 ```
