@@ -1,15 +1,21 @@
 ## We demonstrate one setting of simulation 2 using mice genotypes
 
 ### Setting:
-- S: 5
-- $h^2$: 1.25%
+This is for demonstration. Please change the parameters in the below code to simulate another scenario.
 
+- S: 5
+- $h^2$: 10%
+
+```applescript
+rm(list = ls())
+S=5
+h2_par= 0.1
+```
 ### Create output directory and load packages
 
 ```applescript
 dir.create('~/output/Simulation_2',recursive=TRUE)
 setwd("~/output/Simulation_2")
-rm(list = ls())
 library(susieR)
 library(BGData)
 library(BGLR)
@@ -26,18 +32,16 @@ data(mice)
 chr = sample(1:19,size=1)
 X = mice.X
 MAP = mice.map
-S=5
-h2_par= 0.0125
 n=dim(X)[1]
 
 message("Data frame with variant sets ...")
 TMP = data.frame(chr = chr, snp_id = MAP$snp_id, bp = MAP$mbp*1e6, array = TRUE)
 
-message('Create 500kb block filter')
+message('Create 2mbp block filter')
 set.seed(19092264+(mc))
-start = sample(which(TMP$bp>=1e6 & TMP$bp<= (tail(TMP$bp,1)-1e6)),size=1)
+start = sample(which(TMP$bp>=(head(TMP$bp,1)+2e6) & TMP$bp<= (tail(TMP$bp,1)-2e6)),size=1)
 TMP$block = FALSE
-block = which(TMP$bp >= TMP$bp[start] & TMP$bp <= (TMP$bp[start] + 500e3))
+block = which(TMP$bp >= TMP$bp[start] & TMP$bp <= (TMP$bp[start] + 2e6))
 TMP$block[block] = TRUE
 
 message('Create QTL id')
@@ -131,7 +135,7 @@ for(a in threshold[2:length(threshold)]){tmp=SuSiE(B=B,threshold=a);output=rbind
 output$method = rep('Susie',nrow(output))
 samples = list(susie=B)
 ```
-## Run BGLR (WIP)
+## Run BGLR
 ```applescript
 message('Running BGLR ...')
 set.seed(19092264+mc)
@@ -156,10 +160,12 @@ XX = abs(XX[core_id,core_id]/n)
 p = ncol(XX)
 DIS = matrix(0,nrow=p,ncol=p)
 for(a in 1:(p-1)){
-  for(b in (a+1):p){
-    DIS[a,b] = sqrt(XX[a,a]+XX[b,b]-2*XX[a,b])
-    DIS[b,a] = DIS[a,b]	
-  }
+    tryCatch({
+      for(b in (a+1):p){
+        DIS[a,b] = sqrt(XX[a,a]+XX[b,b]-2*XX[a,b])
+        DIS[b,a] = DIS[a,b]	
+      }
+    },warning=function(w){print(paste0(w," at ",a," and ",b))})
 }
 r = hclust(as.dist(DIS))
 merge_mt = r$merge
@@ -345,34 +351,35 @@ label_n = rep(gl(1,4*length(resolution)*3,labels = n),1)
 label_S = rep(gl(1,4*length(resolution)*3,labels = paste0("S:",length(QTL))),1)
 Data = data.frame(Data,Method = label_model,Res = label_res,n = label_n, S = label_S)
 ```
-## Plotting Power vs FDR at resolution 0 kbp
+## Plotting Power vs FDR at resolution 0,10,100 kbp
 ```applescript
 output_dir = '~/output/Simulation_2/'
 figures_dir = 'figures/'
-dir.create(paste0(output_dir,figures_dir),recursive=TRUE)
-setwd(paste0(output_dir,figures_dir))
+dir.create(paste0(output_dir,figures_dir,'/Setting_',args),recursive=TRUE)
+setwd(paste0(output_dir,figures_dir,'/Setting_',args))
 DATA = Data
 maxClustSize=c(0,10,100)
 alpha = c(0,0.02,0.05,0.1)
 tmp = rep(gl(length(alpha),1,labels=alpha),nrow(DATA)/length(alpha))
 DATA$alpha = tmp
-res=paste0('Resolution: ',0,' kbp')
-DATA1=DATA[DATA$Res==res,]
-p=ggplot( DATA1,aes(x=FDR,y=Power))+
-    geom_line(aes(size=Method,linetype=Method,color=Method),show.legend=TRUE)+ #scale_colour_manual(name="Method",values=c("red", "blue", "green"))+ 
-    scale_size_manual(name="Method",values=c(1,0.5,0.5))+
-    geom_point(aes(shape=alpha,color=Method),size=2) + #guides(color=FALSE) +
-    labs(shape="Level") + scale_shape_manual(labels=c(0,0.02,0.05,0.1),values=c(21,22,23,24))+
-    #scale_size_manual(name="Method",values=c(0.5,5,1),breaks=unique(DATA1$Method),labels=unique(DATA1$Method))+
-    geom_errorbar(aes(ymin=Power-Power_sd, ymax=Power+Power_sd), width=.2)+ 
-    geom_errorbar(aes(xmin=FDR-FDR_sd, xmax=FDR+FDR_sd))+ 
-    xlab('Empirical FDR')+
-    xlim(c(0,.1))+
-    geom_vline(aes(xintercept=.05),linetype='dashed',col='grey29')+
-    ggtitle(paste0(' 5 causal variants (Resolution 0 kbp)'))+
-    theme(legend.position = c(0.43, 0.20))+
-    ylim(c(0,1))
-ggsave(file=paste0("power_fdr_plot_res",maxClustSize[i],"kbp.png"),plot = p,height=8,width = 10)
-
+for(i in 1:3){
+    res=paste0('Resolution: ',maxClustSize[i],' kbp')
+    DATA1=DATA[DATA$Res==res,]
+    p=ggplot( DATA1,aes(x=FDR,y=Power))+
+        geom_line(aes(size=Method,linetype=Method,color=Method),show.legend=TRUE)+ #scale_colour_manual(name="Method",values=c("red", "blue", "green"))+ 
+        scale_size_manual(name="Method",values=c(1,0.5,0.5))+
+        geom_point(aes(shape=alpha,color=Method),size=2) + #guides(color=FALSE) +
+        labs(shape="Level") + scale_shape_manual(labels=c(0,0.02,0.05,0.1),values=c(21,22,23,24))+
+        #scale_size_manual(name="Method",values=c(0.5,5,1),breaks=unique(DATA1$Method),labels=unique(DATA1$Method))+
+        geom_errorbar(aes(ymin=Power-Power_sd, ymax=Power+Power_sd), width=.2)+ 
+        geom_errorbar(aes(xmin=FDR-FDR_sd, xmax=FDR+FDR_sd))+ 
+        xlab('Empirical FDR')+
+        xlim(c(0,.1))+
+        geom_vline(aes(xintercept=.05),linetype='dashed',col='grey29')+
+        ggtitle(paste0(' 5 causal variants (Resolution ',maxClustSize[i],' kbp)'))+
+        theme(legend.position = c(0.43, 0.20))+
+        ylim(c(0,1))
+    ggsave(file=paste0("power_fdr_plot_res",maxClustSize[i],"kbp.png"),plot = p,height=8,width = 10)
+}
 ```
 
