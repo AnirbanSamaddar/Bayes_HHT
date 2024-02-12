@@ -1,15 +1,17 @@
-## We demonstrate one setting of simulation 2 using mice genotypes
+## We demonstrate one setting of simulation 2
 
 ### Setting:
 This is for demonstration. Please change the parameters in the below code to simulate another scenario.
 
+- n: 10000
 - S: 5
-- $h^2$: 10%
+- $h^2$: 1.25%
 
 ```applescript
 rm(list = ls())
+n=10000
 S=5
-h2_par= 0.1
+h2_par= 0.0125
 ```
 ### Create output directory and load packages
 
@@ -17,6 +19,7 @@ h2_par= 0.1
 dir.create('~/output/Simulation_2',recursive=TRUE)
 setwd("~/output/Simulation_2")
 library(susieR)
+library(data.table)
 library(BGData)
 library(BGLR)
 library(ggplot2)
@@ -28,20 +31,20 @@ setwd('~/output/Simulation_2/')
 mc = 1
 set.seed(19092264+mc)
 message("Data loading ...")
-data(mice)
-chr = sample(1:19,size=1)
-X = mice.X
-MAP = mice.map
-n=dim(X)[1]
+chr = sample(1:22,size=1)
+bed_file = paste0('path to UKB bed files','/chrom',chr,'.bed')
+X = BEDMatrix(bed_file)
+map_file = paste0('path to UKB map files','/chrom',chr,'.bim')
+MAP = fread(map_file)
 
 message("Data frame with variant sets ...")
-TMP = data.frame(chr = chr, snp_id = MAP$snp_id, bp = MAP$mbp*1e6, array = TRUE)
+TMP = data.frame(chr = chr, snp_id = MAP$V2, bp = MAP$V4, array = TRUE)
 
-message('Create 2mbp block filter')
+message('Create 100kbp block filter')
 set.seed(19092264+(mc))
-start = sample(which(TMP$bp>=(head(TMP$bp,1)+2e6) & TMP$bp<= (tail(TMP$bp,1)-2e6)),size=1)
+start = sample(which(TMP$bp>=(head(TMP$bp,1)+1e6) & TMP$bp<= (tail(TMP$bp,1)-1e6)),size=1)
 TMP$block = FALSE
-block = which(TMP$bp >= TMP$bp[start] & TMP$bp <= (TMP$bp[start] + 2e6))
+block = which(TMP$bp >= TMP$bp[start] & TMP$bp <= (TMP$bp[start] + 100e3))
 TMP$block[block] = TRUE
 
 message('Create QTL id')
@@ -61,7 +64,8 @@ TMP$Flanks = FALSE
 TMP$Flanks[c(tmp1,tmp2)] =TRUE
 
 message("Create chunk (block + flank) ...")
-sample_set = c(1:nrow(X))
+set.seed(19092264+(mc))
+sample_set = sample(1:nrow(X),size=n,replace=FALSE)
 chunk = sort(which((TMP$array & (TMP$block + TMP$Flanks))))
 core = sort(which((TMP$array & TMP$block)))
 chunk_snps = X[sample_set,chunk]
