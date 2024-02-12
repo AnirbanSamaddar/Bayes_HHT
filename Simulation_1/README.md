@@ -1,4 +1,4 @@
-## We demonstrate one setting of simulation 1 here
+## We demonstrate one setting of simulation 1
 
 ### Setting:
 This is for demonstration. Please change the parameters in the below code to simulate another scenario.
