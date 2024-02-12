@@ -87,4 +87,4 @@ dir.create('~/Toy_example/',recursive=TRUE)
 setwd('~/Toy_example/')
 ggsave('PIP_w_discovery_seg.png',width=10)
 ```
-
+[Menu](https://github.com/AnirbanSamaddar/Bayes_HHT/tree/main) [Simulation 1](https://github.com/AnirbanSamaddar/Bayes_HHT/tree/main/Simulation_1) [Simulation 2](https://github.com/AnirbanSamaddar/Bayes_HHT/tree/main/Simulation_2) 
