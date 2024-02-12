@@ -1,17 +1,28 @@
 ## We demonstrate one setting of simulation 1 here
 
 ### Setting:
+This is for demonstration. Please change the parameters in the below code to simulate another scenario.
+
 - S: 20
 - n: 50,000
-- $\rho$: 0.9
+- r: 0.9
 - $h^2$: 1.25%
 
+Please note that the lag-1 correlation between predictors is controlled by the parameter ```shape1_par``` in the below code. This parameter controls the shape of the beta distribution which is used to induce correlation among the predictors (please refer to the "Generation of the simulation study covariates" section in the Supplementary data). Increasing ```shape1_par``` will decrease the correlation and vice versa.
+
+```applescript
+rm(list = ls())
+shape1_par=0.5
+h2_par= 0.0125
+SSize=50000
+nSNP_par=525
+S=20
+```
 ### Create output directory and load packages
 
 ```applescript
 dir.create('~/output/',recursive=TRUE)
 setwd("~/output/")
-rm(list = ls())
 library(susieR)
 library(BGData)
 library(BGLR)
@@ -44,17 +55,12 @@ getBlock=function(n,p,freq=0.2,shape1=2,shape2=.5,replace=T){
 
 ```
 
-### Setting the parameters to generate the data
+### Generate the data
 
 ```applescript
 setwd('~/output/')
 jobID = 1
 set.seed(19092264+jobID)
-shape1_par=0.5 
-h2_par= 0.0125
-SSize=50000
-nSNP_par=525
-S=20
 Oracle=S+10
 Dis_z=25
 if(S==20){
