@@ -21,8 +21,8 @@ S=20
 ### Create output directory and load packages
 
 ```applescript
-dir.create('~/output/',recursive=TRUE)
-setwd("~/output/")
+dir.create('~/output/Simulation_1/',recursive=TRUE)
+setwd("~/output/Simulation_1/")
 library(susieR)
 library(BGData)
 library(BGLR)
@@ -58,7 +58,7 @@ getBlock=function(n,p,freq=0.2,shape1=2,shape2=.5,replace=T){
 ### Generate the data
 
 ```applescript
-setwd('~/output/')
+setwd('~/output/Simulation_1/')
 jobID = 1
 set.seed(19092264+jobID)
 Oracle=S+10
@@ -202,7 +202,7 @@ write.table(output,file = paste0("output.txt"),row.names=FALSE)
 ```
 ## Preparing the plot data
 ```applescript
-output_dir = '~/output/'
+output_dir = '~/output/Simulation_1/'
 rep = 1
 if(shape1_par==0.2){cor=0.99}else if(shape1_par==0.5){cor=0.9}
 res_disc_FDR_susie = array(NA,dim=c(5,100,rep,1))
@@ -299,7 +299,7 @@ Data = data.frame(Data,Method = label_model,Res = label_res,n = label_n, S = lab
 ```
 ## Plotting Power vs FDR restricting maximum discovery set size to 5
 ```applescript
-output_dir = '~/output/'
+output_dir = '~/output/Simulation_1/'
 figures_dir = 'figures/'
 dir.create(paste0(output_dir,figures_dir),recursive=TRUE)
 setwd(paste0(output_dir,figures_dir))
@@ -333,5 +333,5 @@ p=ggplot( DATA[DATA$S==S,],aes(x=FDR,y=Power,group=Method))+
    theme(legend.position = c(0.67, 0.3))+
    ylim(c(0,0.82))
 ggsave(file=paste0("power_fdr_plot_res",maxClustSize[i],".png"),plot = p,height=8,width = 10)
-
 ```
+[Menu][https://github.com/AnirbanSamaddar/Bayes_HHT/tree/main] [Simulation 2][https://github.com/AnirbanSamaddar/Bayes_HHT/tree/main/Simulation_2]
