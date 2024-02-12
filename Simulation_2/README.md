@@ -382,4 +382,4 @@ for(i in 1:3){
     ggsave(file=paste0("power_fdr_plot_res",maxClustSize[i],"kbp.png"),plot = p,height=8,width = 10)
 }
 ```
-
+[Menue](https://github.com/AnirbanSamaddar/Bayes_HHT?tab=readme-ov-file#examples)
