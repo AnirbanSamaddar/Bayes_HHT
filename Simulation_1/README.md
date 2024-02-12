@@ -334,4 +334,4 @@ p=ggplot( DATA[DATA$S==S,],aes(x=FDR,y=Power,group=Method))+
    ylim(c(0,0.82))
 ggsave(file=paste0("power_fdr_plot_res",maxClustSize[i],".png"),plot = p,height=8,width = 10)
 ```
-[Menu][https://github.com/AnirbanSamaddar/Bayes_HHT/tree/main] [Simulation 2][https://github.com/AnirbanSamaddar/Bayes_HHT/tree/main/Simulation_2]
+[Menu](https://github.com/AnirbanSamaddar/Bayes_HHT/tree/main) [Simulation 2](https://github.com/AnirbanSamaddar/Bayes_HHT/tree/main/Simulation_2)
