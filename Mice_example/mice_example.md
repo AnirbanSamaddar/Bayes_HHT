@@ -68,8 +68,8 @@ DF$'Variant Type'[QTL]='Causal'
 DF$BHHT='Non Rej.'
 DF$BHHT[ds_bht]='Discovery'
 
-dir.create('~/Toy_example/',recursive=TRUE)
-setwd('~/Toy_example/')
+dir.create('~/output/Toy_example/',recursive=TRUE)
+setwd('~/output/Toy_example/')
 p2=ggplot(DF,aes(x=Mbp,y=PIP))+
   geom_point(aes(color=BHHT,size=BHHT,shape=`Variant Type`))+
   scale_shape_manual(values=c(16,1))+
@@ -83,8 +83,8 @@ for(i in 1:nrow(DS_BHHT)){
 		xmax = mice.map$mbp[DS_BHHT$last[i]]+.2, ymin =0, 
 		ymax = DS_BHHT$cPIP[i],alpha = .1,fill = "blue")
 }
-dir.create('~/Toy_example/',recursive=TRUE)
-setwd('~/Toy_example/')
+dir.create('~/output/Toy_example/',recursive=TRUE)
+setwd('~/output/Toy_example/')
 ggsave('PIP_w_discovery_seg.png',width=10)
 ```
 [Menu](https://github.com/AnirbanSamaddar/Bayes_HHT/tree/main) [Simulation 1](https://github.com/AnirbanSamaddar/Bayes_HHT/tree/main/Simulation_1) [Simulation 2](https://github.com/AnirbanSamaddar/Bayes_HHT/tree/main/Simulation_2) 
