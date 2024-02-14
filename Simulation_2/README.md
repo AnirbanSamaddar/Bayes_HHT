@@ -25,6 +25,7 @@ library(BGLR)
 library(ggplot2)
 ```
 ### Generate the data
+Please replace the ```path to UKB bed files``` in the below code with the directory path where the BED files from UK-Biobank are stored.
 
 ```applescript
 setwd('~/output/Simulation_2/')
